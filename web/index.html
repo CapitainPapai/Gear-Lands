@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#111b1c" />
+  <meta name="description" content="Gear Lands — атмосферная 2D-метроидвания. Пробудись среди обломков, собери себя заново и брось вызов императору механической империи." />
+  <title>Gear Lands — Пробуждение механизма</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <script id="file-fallback">
+    // A helpful explanation instead of a blank page when a browser blocks file:// modules.
+    if (location.protocol === 'file:') {
+      document.addEventListener('DOMContentLoaded', function () {
+        var screen = document.getElementById('loading-screen');
+        screen.innerHTML = '<strong>Нужна автономная сборка</strong><span>Откройте корневой index.html из ZIP проекта или выполните <code>npm run build</code>. Эта папка хранит исходники для разработки.</span><a class="primary-button" href="../index.html">Открыть готовую игру</a>';
+      });
+    }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Gear Lands — путешествие" id="brand-home">
+        <span class="brand-mark"><i data-lucide="cog"></i><span></span></span>
+        <span class="brand-type">GEAR LANDS<small>ПРОБУЖДЕНИЕ МЕХАНИЗМА</small></span>
+      </a>
+      <nav class="main-nav" aria-label="Главное меню">
+        <button class="nav-item active" id="nav-journey" aria-label="Путешествие"><i data-lucide="compass"></i><span>Путешествие</span></button>
+        <button class="nav-item" id="nav-skills" aria-label="Древо навыков"><i data-lucide="network"></i><span>Древо навыков</span><b id="skill-badge">1</b></button>
+        <button class="nav-item" id="nav-map" aria-label="Атлас мира"><i data-lucide="map"></i><span>Атлас мира</span></button>
+      </nav>
+      <div class="header-actions">
+        <span class="save-status" id="save-status"><span></span>Локальное сохранение</span>
+        <button class="icon-button sound-button" id="sound-toggle" aria-label="Включить звук" title="Включить звук"><i data-lucide="volume-x"></i></button>
+        <button class="icon-button" id="settings-button" aria-label="Настройки" title="Настройки"><i data-lucide="settings-2"></i></button>
+        <button class="icon-button" id="fullscreen-button" aria-label="Полный экран" title="Полный экран"><i data-lucide="maximize"></i></button>
+      </div>
+    </header>
+
+    <main class="game-stage" id="game-stage">
+      <canvas id="game" tabindex="0" aria-label="Игровой мир Gear Lands. A и D — движение, пробел — прыжок, J — удар, E — взаимодействие."></canvas>
+      <div class="stage-grain" aria-hidden="true"></div>
+      <div class="hud-top">
+        <div class="vitals">
+          <div class="health-row" id="health-row" aria-label="Здоровье"></div>
+          <div class="energy-row"><i data-lucide="zap"></i><div class="energy-track"><span id="energy-fill"></span></div><span id="energy-label">60 / 60</span></div>
+          <div class="status-caption"><span class="status-dot"></span><span id="condition-label">СИСТЕМЫ СТАБИЛЬНЫ</span></div>
+        </div>
+        <div class="location-heading"><span id="location-eyebrow">ЗАБЫТЫЕ ОКРАИНЫ · I</span><h1 id="location-title">Свалка</h1><div class="heading-ornament"><span></span><i data-lucide="cog"></i><span></span></div></div>
+        <button class="quest-card" id="quest-button" title="Открыть журнал заданий">
+          <span class="quest-eyebrow"><i data-lucide="diamond"></i>ПУТЬ НАВЕРХ</span>
+          <strong id="quest-title">Собери себя заново</strong>
+          <span id="quest-description">Найди маяк и пробуди<br>свои механизмы.</span><span class="quest-direction" id="quest-direction"></span>
+          <span class="quest-bottom"><span class="guardian-dots" id="guardian-dots"><b></b><b></b><b></b></span><span id="guardian-count">0 / 3 хранителя</span><i data-lucide="arrow-up-right"></i></span>
+        </button>
+      </div>
+
+      <section class="intro-card" id="intro-card" aria-label="Начало игры">
+        <div class="chapter-label"><span></span>ГЛАВА I · ПРОБУЖДЕНИЕ</div>
+        <h2>Тебя собрали<br>из <em>обломков.</em></h2>
+        <p>Внизу — забытые механизмы.<br>Наверху — тот, кто тебя сломал.<br>Твоё восхождение начинается здесь.</p>
+        <button class="primary-button" id="start-button"><i data-lucide="play"></i><span>Пробудиться</span><i data-lucide="arrow-right"></i></button>
+        <button class="text-button" id="new-game-button" hidden>Начать новую историю <i data-lucide="rotate-ccw"></i></button>
+        <div class="intro-note"><i data-lucide="headphones"></i>Этот мир лучше слышать. Надень наушники.</div>
+      </section>
+
+      <div class="interaction-prompt" id="interaction-prompt" hidden><kbd>E</kbd><span>Отдохнуть у маяка</span></div>
+      <div class="boss-hud" id="boss-hud" hidden><span id="boss-subtitle">ХРАНИТЕЛЬ ВОСТОЧНЫХ ВРАТ</span><h2 id="boss-name"></h2><div class="boss-health-track"><span id="boss-health-fill"></span></div><small id="boss-phase"></small></div>
+      <div class="zone-announcement" id="zone-announcement"><span>НОВАЯ ОБЛАСТЬ</span><h2></h2><p></p></div>
+      <div class="damage-vignette" id="damage-vignette"></div>
+      <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
+
+      <div class="hud-bottom">
+        <div class="character-status">
+          <button class="character-portrait" id="character-button" aria-label="Характеристики Искры"><span class="portrait-halo"></span><span class="cyborg-bust"><b class="bust-head"><b></b></b><b class="bust-scarf"></b><b class="bust-body"></b></span><span class="level-badge" id="level-badge">1</span></button>
+          <div class="character-info"><div><strong>ИСКРА</strong><span id="character-level">УРОВЕНЬ 1</span></div><span class="character-subtitle" id="character-subtitle">Пробуждённый киборг</span><div class="xp-row"><div class="xp-track"><span id="xp-fill"></span></div><span id="xp-label">0 / 60</span></div><div class="currency-row"><i data-lucide="cog"></i><b id="gear-count">0</b><span>шестерён</span><b class="skill-point-count" id="point-count">1</b><span>навык</span></div></div>
+        </div>
+        <div class="ability-bar" aria-label="Способности">
+          <button class="ability-slot equipped" data-action="attack" title="Удар клинком — J"><i data-lucide="swords"></i><kbd>J</kbd><span>Клинок</span></button>
+          <button class="ability-slot" data-action="dash" id="dash-slot" title="Паровой рывок — K"><i data-lucide="wind"></i><kbd>K</kbd><span>Рывок</span><b class="cooldown-overlay"></b></button>
+          <button class="ability-slot" data-action="bolt" id="bolt-slot" title="Паровой заряд — L"><i data-lucide="flame"></i><kbd>L</kbd><span>Пар</span><b class="cooldown-overlay"></b></button>
+          <button class="ability-slot equipped" data-action="heal" title="Починка: 25 пара — F"><i data-lucide="wrench"></i><kbd>F</kbd><span>Починка</span><b class="cooldown-overlay"></b></button>
+        </div>
+        <button class="minimap-card" id="minimap-button" title="Открыть атлас — M"><div class="minimap-top"><span id="minimap-zone">СЕКТОР 01</span><kbd>M</kbd></div><canvas id="minimap" width="210" height="64" aria-label="Мини-карта текущей локации"></canvas><div class="minimap-bottom"><span class="map-player-dot"></span><span>Ты здесь</span><span class="map-bench-dot"></span><span>Маяк</span></div></button>
+      </div>
+      <div class="touch-controls" id="touch-controls"><div><button data-touch="left" aria-label="Влево"><i data-lucide="arrow-left"></i></button><button data-touch="right" aria-label="Вправо"><i data-lucide="arrow-right"></i></button></div><div><button data-touch="interact" aria-label="Действие">E</button><button data-touch="heal" aria-label="Починка">F</button><button data-touch="bolt" aria-label="Паровой заряд">L</button><button data-touch="dash" aria-label="Рывок">K</button><button data-touch="attack" aria-label="Удар">J</button><button data-touch="jump" aria-label="Прыжок"><i data-lucide="chevrons-up"></i></button></div></div>
+      <div class="loading-screen" id="loading-screen"><i data-lucide="cog"></i><span>Пробуждаем механизмы…</span></div>
+    </main>
+
+    <footer class="bottom-bar">
+      <div class="control-hints"><span><kbd>A</kbd><kbd>D</kbd> Движение</span><span><kbd class="wide-key">Space</kbd> Прыжок</span><span><kbd>J</kbd> Удар</span><span><kbd>K</kbd> Рывок</span><span><kbd>E</kbd> Действие</span><button id="help-button" title="Все элементы управления"><i data-lucide="circle-help"></i><span>Управление</span></button></div>
+      <button class="now-playing" id="music-button"><span class="equalizer"><b></b><b></b><b></b><b></b></span><span class="track-info"><small>АТМОСФЕРА ЗВУКА</small><strong id="current-track">Пробуждение</strong></span><span class="track-number" id="track-number">01 <span>/ 15</span></span><i data-lucide="chevron-right"></i></button>
+    </footer>
+  </div>
+  <div class="modal-root" id="modal-root" hidden></div>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

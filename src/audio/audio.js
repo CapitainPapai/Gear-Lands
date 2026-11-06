@@ -1,3 +1,5 @@
+import { assetUrl, embeddedAudioBytes } from '../game/assets.js';
+
 export class AudioEngine {
   constructor(manifest, settings = {}) {
     this.manifest = manifest;
@@ -54,7 +56,8 @@ export class AudioEngine {
   async load(file) {
     if (this.buffers.has(file)) return this.buffers.get(file);
     if (this.loading.has(file)) return this.loading.get(file);
-    const promise = fetch(`/audio/${file}`).then(r => { if (!r.ok) throw new Error(`Audio ${r.status}`); return r.arrayBuffer(); }).then(b => this.ctx.decodeAudioData(b)).then(buffer => {
+    const bytes = embeddedAudioBytes(file);
+    const promise = (bytes ? Promise.resolve(bytes) : fetch(assetUrl(`audio/${file}`)).then(r => { if (!r.ok) throw new Error(`Audio ${r.status}`); return r.arrayBuffer(); })).then(b => this.ctx.decodeAudioData(b)).then(buffer => {
       this.buffers.set(file, buffer); this.loading.delete(file); return buffer;
     }).catch(error => { this.loading.delete(file); throw error; });
     this.loading.set(file, promise);
