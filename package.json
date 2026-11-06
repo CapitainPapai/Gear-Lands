@@ -6,11 +6,13 @@
   "description": "Gear Lands — an atmospheric steampunk metroidvania for the browser.",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "vite build",
+    "build": "vite build && node scripts/export-standalone.mjs",
     "preview": "vite preview --host 0.0.0.0",
+    "preview:pages": "node scripts/serve-pages.mjs",
     "test": "node --test tests/*.test.js",
     "audio": "python scripts/synthesize_audio.py",
-    "test:e2e": "playwright test"
+    "test:e2e": "npm run build && playwright test && playwright test --config playwright.release.config.js",
+    "test:release": "playwright test --config playwright.release.config.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.0",

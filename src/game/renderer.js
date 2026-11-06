@@ -1,5 +1,6 @@
 import { ZONES, BOSSES } from './world.js';
 import { clamp, lerp, seeded } from './math.js';
+import { assetUrl } from './assets.js';
 
 const TAU = Math.PI * 2;
 function path(ctx, points, fill, stroke, width = 1) {
@@ -39,7 +40,7 @@ export class Renderer {
     this.texture=this.createTexture();
   }
   async load() {
-    await Promise.all(ZONES.map(z=>new Promise(resolve=>{const image=new Image();image.onload=()=>{this.images[z.id]=image;resolve();};image.onerror=()=>resolve();image.src=`/art/${z.art}`;})));
+    await Promise.all(ZONES.map(z=>new Promise(resolve=>{const image=new Image();image.onload=()=>{this.images[z.id]=image;resolve();};image.onerror=()=>resolve();image.src=assetUrl(`art/${z.art}`);})));
   }
   createTexture(){const c=document.createElement('canvas');c.width=180;c.height=180;const x=c.getContext('2d');const rng=seeded(717);for(let i=0;i<1700;i++){x.fillStyle=rng()>.5?'#e2d3a80a':'#06181813';x.fillRect(rng()*180,rng()*180,1+rng()*2,1);}return c;}
   resize(){const rect=this.canvas.getBoundingClientRect();this.dpr=Math.min(window.devicePixelRatio||1,2);this.canvas.width=Math.round(rect.width*this.dpr);this.canvas.height=Math.round(rect.height*this.dpr);this.scale=rect.height/760;this.width=rect.width/this.scale;this.height=760;}
